@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 19:12:50 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/03 11:41:55 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/07 15:33:29 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,12 +21,14 @@ class BitcoinExchange {
 	private:
 		static std::map<std::string, float> _db;
 		static std::map<std::string, float> _input;
-		static std::ifstream _db_file;
+		static std::ifstream _dbFile;
 		static std::ifstream _infile;
 		BitcoinExchange();
 		~BitcoinExchange();
 		BitcoinExchange(const BitcoinExchange &cp);
 		BitcoinExchange &operator=(const BitcoinExchange &cp);
+		static void fillDataBase(void);
+		static bool validDate(std::string line);
 	public:
 		static void convertData(const char *infile_name);
 };
