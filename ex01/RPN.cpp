@@ -6,13 +6,13 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/08 15:57:53 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/08 16:43:53 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/08 18:04:28 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RPN.hpp"
 
-std::stack<int> RPN::stk = std::stack<int>();
+std::stack<int> RPN::_stk = std::stack<int>();
 
 /**
  * Checks if the received argument contains something that is not number, operator or spaces.
@@ -44,28 +44,28 @@ void RPN::operate(const char *str) {
 
 	while(*str) {
 		if (*str >= '0' && *str <= '9')
-			stk.push(*str - 48);
+			_stk.push(*str - 48);
 		else if (*str == '+' || *str == '-' || *str == '*' || *str == '/') {
-			if (stk.size() <= 1) {
+			if (_stk.size() <= 1) {
 				std::cout << "Error. Too many operation and too few operands." << std::endl;
 				return ;
 			}
-			int rOperand1 = stk.top();
-			stk.pop();
-			int rOperand2 = stk.top();
-			stk.pop();
+			int rOperand1 = _stk.top();
+			_stk.pop();
+			int rOperand2 = _stk.top();
+			_stk.pop();
 			if (*str == '+')
-				stk.push(rOperand2 + rOperand1);
+				_stk.push(rOperand2 + rOperand1);
 			else if (*str == '-')
-				stk.push(rOperand2 - rOperand1);
+				_stk.push(rOperand2 - rOperand1);
 			else if (*str == '*')
-				stk.push(rOperand2 * rOperand1);
+				_stk.push(rOperand2 * rOperand1);
 			else if (*str == '/')
-				stk.push(rOperand2 / rOperand1);
+				_stk.push(rOperand2 / rOperand1);
 		}
 		str++;
 	}
-	std::cout << "RPN result: " << stk.top() << std::endl;
+	std::cout << "RPN result: " << _stk.top() << std::endl;
 }
 
 /*

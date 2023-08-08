@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/08 15:57:45 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/08 16:30:44 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/08 18:03:51 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 class RPN {
 	private:
-		static std::stack<int> stk;
+		static std::stack<int> _stk;
 		RPN();
 		~RPN();
 		RPN(const RPN &cp);
