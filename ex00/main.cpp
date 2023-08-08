@@ -6,42 +6,18 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/07 14:40:24 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/07 15:14:02 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/07 17:42:56 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <map>
+#include "BitcoinExchange.hpp"
 
-int main(void) {
-	std::fstream in("data.csv");
-
-	std::string date;
-	float		val;
-	std::string word;
-	std::string line;
-	std::string tmp;
-	std::map<std::string, float> map;
-
-	int	i = 0;
-	while (std::getline(in, line)) {
-		if (i != 0) {
-			std::string key = line.substr(0,9);
-			float		val = std::atof(line.substr(12,line.size()).c_str());
-			map.insert(std::pair<std::string, float>(key, val));
-		}
-		i++;
+int main(int argc, char **argv) {
+	if (argc != 2) {
+		std::cout << "Error: could not open file." << std::endl;
+		return (1);
 	}
 
-	for (std::map<std::string, float>::iterator it = map.begin(); it != map.end(); it++) {
-		std::cout << it->first << " " << it->second << std::endl;
-	}
-
-
-
-
+	BitcoinExchange::convertData(argv[1]);
 	return (0);
 }

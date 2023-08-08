@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 19:12:50 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/07 15:33:29 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/08 12:52:37 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 class BitcoinExchange {
 	private:
@@ -29,6 +30,7 @@ class BitcoinExchange {
 		BitcoinExchange &operator=(const BitcoinExchange &cp);
 		static void fillDataBase(void);
 		static bool validDate(std::string line);
+		static float getValue(std::string date);
 	public:
 		static void convertData(const char *infile_name);
 };

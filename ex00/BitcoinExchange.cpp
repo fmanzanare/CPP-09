@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 19:12:48 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/07 15:38:35 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/08 14:07:49 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 std::map<std::string, float> BitcoinExchange::_db = std::map<std::string, float>();
 std::map<std::string, float> BitcoinExchange::_input = std::map<std::string, float>();
-std::ifstream BitcoinExchange::_dbFile = std::ifstream("data.csv");
-std::ifstream BitcoinExchange::_infile = std::ifstream();
+std::ifstream BitcoinExchange::_dbFile;
+std::ifstream BitcoinExchange::_infile;
 
 /**
  * Fills _db std::map with data.csv database. It avoids first line.
@@ -26,9 +26,11 @@ void BitcoinExchange::fillDataBase() {
 	while (std::getline(_dbFile, line)) {
 		if (line == "date,exchange_rate")
 			continue ;
-		std::string key = line.substr(0,9);
-		float		val = std::atof(line.substr(11,line.size()).c_str());
-		_db.insert(std::pair<std::string, float>(key, val));
+		if (line.size() >= 12) {
+			std::string key = line.substr(0,10);
+			float		val = std::atof(line.substr(11,line.size()).c_str());
+			_db.insert(std::pair<std::string, float>(key, val));
+		}
 	}
 }
 
@@ -40,32 +42,113 @@ bool BitcoinExchange::validDate(std::string line) {
 	int month;
 	int day;
 
-	while (std::getline(_infile, line)) {
-		if (line == "date | value")
-			continue ;
-		year = std::atoi(line.substr(0,3).c_str());
-		if (year < 1 || year > 2013)
-			return (false);
-		month = std::atoi(line.substr(5,6).c_str());
-		if (month < 1 || month > 12)
-			return (false);
-		day = std::atoi(line.substr(8,9).c_str());
-		if (day < 1 || day > 31)
-			return (false);
+	if (line.size() < 9) {
+		return (false);
 	}
+	year = std::atoi(line.substr(0,4).c_str());
+	if (year < 1 || year > 2023)
+		return (false);
+	month = std::atoi(line.substr(5,7).c_str());
+	if (month < 1 || month > 12)
+		return (false);
+	day = std::atoi(line.substr(8,10).c_str());
+	if (day < 1
+		|| (day > 31 && month % 2 != 0 && month < 8)
+		|| (day > 30 && month % 2 == 0 && month < 8)
+		|| (day > 31 && month % 2 == 0 && month >= 8)
+		|| (day > 30 && month % 2 != 0 && month > 8)
+		|| (day > 29 && month == 2))
+		return (false);
 	return (true);
 }
 
-void BitcoinExchange::convertData(const char *infile_name) {
-	fillDataBase();
-	_infile.open(infile_name); // Try to pass a wrong file and check behaviour!!!!!
+float BitcoinExchange::getValue(std::string date) {
+	float ret;
 
-	std::string line;
+	int year;
+	int month;
+	int day;
 
-	while (std::getline(_infile, line)) {
+	int dbYear;
+	int dbMonth;
+	int dbDay;
 
+	year = std::atoi(date.substr(0,4).c_str());
+	month = std::atoi(date.substr(5,7).c_str());
+	day = std::atoi(date.substr(8,10).c_str());
+	if (year > 2022) {
+		std::map<std::string, float>::iterator itEnd = _db.end();
+		itEnd--;
+		return (_db.at(itEnd->first));
+	}
+	if (year < 2009)
+		return (0);
+
+	for (std::map<std::string, float>::iterator it = _db.begin(); it != _db.end(); it++) {
+		if (it->first == date)
+			return (_db.at(date));
 	}
 
+	for (std::map<std::string, float>::iterator it = _db.begin(); it != _db.end(); it++) {
+		dbYear = std::atoi(it->first.substr(0,4).c_str());
+		dbMonth = std::atoi(it->first.substr(5,7).c_str());
+		if (year != dbYear && month != dbMonth)
+			continue ;
+		int dif = std::numeric_limits<int>::max();
+		for (std::map<std::string, float>::iterator it2 = it; (dbMonth == month && dbYear == year); it2++) {
+			dbYear = std::atoi(it2->first.substr(0,4).c_str());
+			dbMonth = std::atoi(it2->first.substr(5,7).c_str());
+			if (dbMonth != month || dbYear != year)
+				break ;
+			dbDay = std::atoi(it2->first.substr(8,10).c_str());
+			if (dif > (day - dbDay) && (day - dbDay) > 0) {
+				ret = it2->second;
+				dif = day - dbDay;
+			}
+		}
+	}
+	return (ret);
+}
+
+void BitcoinExchange::convertData(const char *infile_name) {
+	_dbFile.open("data.csv");
+	if (_dbFile.fail()) {
+		std::cout << "Error: Wrong database file." << std::endl;
+		return ;
+	}
+	fillDataBase();
+
+	_infile.open(infile_name);
+	if (_infile.fail()) {
+		std::cout << "Error: File could not be opened." << std::endl;
+		return ;
+	}
+
+	std::string line;
+	std::string key;
+	std::string date;
+	float val;
+
+	while (std::getline(_infile, line)) {
+		if (line == "date | value")
+			continue ;
+		if (!validDate(line) || line.size() < 14) {
+			std::cout << "Error: bad input => " << line << std::endl;
+			continue ;
+		}
+		date = line.substr(0,10);
+		val = std::atof(line.substr(13, line.size()).c_str());
+		if (val < 0) {
+			std::cout << "Error: not a positivie number." << std::endl;
+			continue ;
+		} else if (val > 1000) {
+			std::cout << "Error: too large number." << std::endl;
+			continue ;
+		}
+		std::cout << std::fixed;
+		std::cout << std::setprecision(2);
+		std::cout << date << " => " << val << " = " << val * getValue(date) << std::endl;
+	}
 }
 
 
