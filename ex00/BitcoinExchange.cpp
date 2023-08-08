@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 19:12:48 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/08 14:07:49 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/08 14:14:41 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,12 @@ bool BitcoinExchange::validDate(std::string line) {
 	return (true);
 }
 
+/**
+ * Looks for the correct value into the map.
+ * If year is over or under limits, returns the closes date.
+ * If date exists on the database (map) returns its value.
+ * If it does not exist on the database, looks for the closest lower one and returns its value.
+*/
 float BitcoinExchange::getValue(std::string date) {
 	float ret;
 
