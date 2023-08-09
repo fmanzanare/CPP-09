@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/08 18:02:09 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/09 17:30:45 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/09 20:29:07 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,12 @@ std::vector<int> PmergeMe::_v = std::vector<int>();
 std::list<int> PmergeMe::_l = std::list<int>();
 int PmergeMe::_N = 0;
 
+/**
+ * Checks if the inputs are numbers.
+ * If a number is not found on it, it returns false.
+ * @param *str String to be checked.
+ * @return true, if the string only contains numbers, false if it contains something more.
+*/
 bool PmergeMe::checkInputs(char *str) {
 	for (int i = 0; str[i] != '\0'; i++) {
 		if (str[i] < '0' || str[i] > '9')
@@ -25,6 +31,12 @@ bool PmergeMe::checkInputs(char *str) {
 	return (true);
 }
 
+/**
+ * Fills the class containers with the received arguments.
+ * If the argument is negative, or if its not a number, it prints an error and return false.
+ * @param **argv Received arguments from main function.
+ * @return true if arguments are right, false if there are wrong arguments.
+*/
 bool PmergeMe::fillContainers(char **argv) {
 	long num;
 
@@ -45,6 +57,10 @@ bool PmergeMe::fillContainers(char **argv) {
 	return (true);
 }
 
+/**
+ * Goes through each element of the class vector to check if it is already sorted.
+ * @return true, if it is sortes, false if it is not.
+*/
 bool PmergeMe::checkSorted() {
 	for (std::vector<int>::iterator it = _v.begin(); (it + 1) != _v.end(); it++) {
 		if (*it > *(it + 1))
@@ -53,39 +69,114 @@ bool PmergeMe::checkSorted() {
 	return (true);
 }
 
-void PmergeMe::printLExecTime(struct timeval l_start, double dm_time) {
-	struct timeval l_end;
+/**
+ * Get the execution time for a particular contianer.
+ * @param start Timeval struct that saves the starting time.
+ * @param end Timeval struct that saves the finishing time.
+ * @param dm_time Data management time previously calculated.
+*/
+double PmergeMe::getExecTime(struct timeval start, struct timeval end, double dm_time) {
+	gettimeofday(&end, NULL);
 
-	gettimeofday(&l_end, NULL);
+	double diff = (start.tv_sec - end.tv_sec) * 1e6;
+	diff = (diff + (start.tv_usec - end.tv_usec)) * 1e-6;
+	if (diff < 0)
+		diff *= -1;
 
-	double l_diff = (l_start.tv_sec - l_end.tv_sec) * 1e6;
-	l_diff = (l_diff + (l_start.tv_usec - l_start.tv_usec)) * 1e-6;
-	if (l_diff < 0)
-		l_diff *= -1;
-
-	std::cout << std::fixed;
-	std::cout << std::setprecision(6);
-	std::cout << "Time to process a range of " << _N << " elements with std::list<int>: " << (l_diff + dm_time) << " secs" << std::endl;
+	return (diff + dm_time);
 }
 
-void PmergeMe::printVExecTime(struct timeval v_start, double dm_time) {
-	struct timeval v_end;
+/**
+ * Recives a vector and sorts it.
+ * If its size is lower or equal to 180 elements, it does insertion sort.
+ * If not, it calls the function recursively until each section can be sorted with insertion sort.
+ * @param vector Received unordered vector.
+ * @return sorted vector.
+*/
+std::vector<int> PmergeMe::vectorSort(std::vector<int> vector) {
+	// INSERTION SORT.
+	if (vector.size() <= 180) {
+		int fixed;
+		int tmp;
 
-	gettimeofday(&v_end, NULL);
+		for (int i = 1; i < (int)vector.size(); i++) {
+			tmp = vector[i];
+			fixed = i - 1;
 
-	double v_diff = (v_start.tv_sec - v_end.tv_sec) * 1e6;
-	v_diff = (v_diff + (v_start.tv_usec - v_start.tv_usec)) * 1e-6;
-	if (v_diff < 0)
-		v_diff *= -1;
+			while (fixed >= 0 && vector[fixed] > tmp) {
+				vector[fixed + 1] = vector[fixed];
+				fixed--;
+			}
+			vector[fixed + 1] = tmp;
+		}
+		return (vector);
+	}
 
-	std::cout << std::fixed;
-	std::cout << std::setprecision(6);
-	std::cout << "Time to process a range of " << _N << " elements with std::vector<int>: " << (v_diff + dm_time) << " secs" << std::endl;
+	// MERGE SORT.
+	std::vector<int>::iterator midpoint = vector.begin() + (vector.size() / 2);
+	std::vector<int> leftSect = std::vector<int>(vector.begin(), midpoint);
+	std::vector<int> rightSect = std::vector<int>(midpoint, vector.end());
+
+	leftSect = vectorSort(leftSect);
+	rightSect = vectorSort(rightSect);
+
+	std::vector<int> res;
+	std::merge(leftSect.begin(), leftSect.end(), rightSect.begin(), rightSect.end(), std::back_inserter(res));
+	return (res);
 }
 
+/**
+ * Recives a list and sorts it.
+ * If its size is lower or equal to 180 elements, it does insertion sort.
+ * If not, it calls the function recursively until each section can be sorted with insertion sort.
+ * @param list Received unordered list.
+ * @return sorted list.
+*/
+std::list<int> PmergeMe::listSort(std::list<int> list) {
+	// INSERTION SORT.
+	if (list.size() <= 180) {
+		for (std::list<int>::iterator it = ++list.begin(); it != list.end(); ) {
+			std::list<int>::iterator fixed = it;
+			std::advance(fixed, -1);
+			while (fixed != list.begin() && *fixed > *it)
+				--fixed;
+			if (*fixed < *it)
+				++fixed;
+			if (*fixed >= *it) {
+				list.insert(fixed, *it);
+				it = list.erase(it);
+			} else
+				it++;
+		}
+			return (list);
+	}
+
+	// MERGE SORT.
+	std::list<int>::iterator midpoint = list.begin();
+	std::advance(midpoint, (std::distance(list.begin(), list.end()) / 2));
+	std::list<int> leftSect = std::list<int>(list.begin(), midpoint);
+	std::list<int> rightSect = std::list<int>(midpoint, list.end());
+
+	leftSect = listSort(leftSect);
+	rightSect = listSort(rightSect);
+
+	std::list<int> res;
+	std::merge(leftSect.begin(), leftSect.end(), rightSect.begin(), rightSect.end(), std::back_inserter(res));
+	return (res);
+}
+
+/**
+ * Gets the received arguments, parses them, fills the containers, and sorts them.
+ * If the received argument is sorted, then prints them and prints the execution time.
+ * To calculate the execution time, it adds the data management time (dm_*) and the sorting time (v_*, _l*).
+ * Finally, if the arguments are not sorted, it calls the sorting functions for each container.
+ * @param **argv Received arguments from main function.
+*/
 void PmergeMe::sort(char **argv) {
 	struct timeval v_start;
+	struct timeval v_end;
 	struct timeval l_start;
+	struct timeval l_end;
 	struct timeval dm_start;
 	struct timeval dm_end;
 
@@ -114,10 +205,48 @@ void PmergeMe::sort(char **argv) {
 			std::cout << argv[i] << " ";
 		}
 		std::cout << std::endl;
-		printVExecTime(v_start, dm_diff);
-		printLExecTime(l_start, dm_diff);
+
+		gettimeofday(&v_end, NULL);
+		gettimeofday(&l_end, NULL);
+
+		std::cout << std::fixed;
+		std::cout << std::setprecision(5);
+		std::cout << "Time to process a range of " << _N << " elements with std::vector<int>: " << getExecTime(v_start, v_end, dm_diff) << " secs" << std::endl;
+		std::cout << "Time to process a range of " << _N << " elements with std::list<int>: " << getExecTime(l_start, l_end, dm_diff) << " secs" << std::endl;
+
 		return ;
 	}
+
+	std::cout << "Before: ";
+	for (int i = 1; argv[i] != NULL; i++) {
+		std::cout << argv[i] << " ";
+	}
+	std::cout << std::endl;
+
+	// MERGE-INSERT SORT FOR std::vector<int> CONTAINER
+	gettimeofday(&v_start, NULL);
+	_v = vectorSort(_v);
+	std::cout << "After std::vector<int>: ";
+	for (std::vector<int>::iterator it = _v.begin(); it != _v.end(); it++) {
+		std::cout << *it << " ";
+	}
+	std::cout << std::endl;
+	gettimeofday(&v_end, NULL);
+
+	// MERGE-INSERT SORT FOR std::list<int> CONTAINER
+	gettimeofday(&l_start, NULL);
+	_l = listSort(_l);
+	std::cout << "After std::list<int>: ";
+	for (std::list<int>::iterator it = _l.begin(); it != _l.end(); it++) {
+		std::cout << *it << " ";
+	}
+	std::cout << std::endl;
+	gettimeofday(&l_end, NULL);
+
+	std::cout << std::fixed;
+	std::cout << std::setprecision(5);
+	std::cout << "Time to process a range of " << _N << " elements with std::vector<int>: " << getExecTime(v_start, v_end, dm_diff) << " secs" << std::endl;
+	std::cout << "Time to process a range of " << _N << " elements with std::list<int>: " << getExecTime(l_start, l_end, dm_diff) << " secs" << std::endl;
 }
 
 /*
