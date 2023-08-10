@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/08 17:59:52 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/09 19:58:32 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/10 13:26:36 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,14 @@
 #include <limits>
 #include <sys/time.h>
 #include <iomanip>
+#include <unistd.h>
 
 class PmergeMe {
 	private:
 		static std::vector<int> _v;
 		static std::list<int> _l;
 		static int _N;
+		static int _threshold;
 
 		static bool checkInputs(char *str);
 		static bool fillContainers(char **argv);

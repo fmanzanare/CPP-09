@@ -6,7 +6,7 @@
 /*   By: fmanzana <fmanzana@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/08 18:02:09 by fmanzana          #+#    #+#             */
-/*   Updated: 2023/08/09 20:29:07 by fmanzana         ###   ########.fr       */
+/*   Updated: 2023/08/10 13:42:01 by fmanzana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 std::vector<int> PmergeMe::_v = std::vector<int>();
 std::list<int> PmergeMe::_l = std::list<int>();
 int PmergeMe::_N = 0;
+int PmergeMe::_threshold = 200;
 
 /**
  * Checks if the inputs are numbers.
@@ -78,10 +79,8 @@ bool PmergeMe::checkSorted() {
 double PmergeMe::getExecTime(struct timeval start, struct timeval end, double dm_time) {
 	gettimeofday(&end, NULL);
 
-	double diff = (start.tv_sec - end.tv_sec) * 1e6;
-	diff = (diff + (start.tv_usec - end.tv_usec)) * 1e-6;
-	if (diff < 0)
-		diff *= -1;
+	double diff = (end.tv_sec - start.tv_sec) * 1e6;
+	diff = (diff + (end.tv_usec - start.tv_usec)) * 1e-6;
 
 	return (diff + dm_time);
 }
@@ -95,7 +94,7 @@ double PmergeMe::getExecTime(struct timeval start, struct timeval end, double dm
 */
 std::vector<int> PmergeMe::vectorSort(std::vector<int> vector) {
 	// INSERTION SORT.
-	if (vector.size() <= 180) {
+	if ((int)vector.size() <= _threshold) {
 		int fixed;
 		int tmp;
 
@@ -134,7 +133,7 @@ std::vector<int> PmergeMe::vectorSort(std::vector<int> vector) {
 */
 std::list<int> PmergeMe::listSort(std::list<int> list) {
 	// INSERTION SORT.
-	if (list.size() <= 180) {
+	if ((int)list.size() <= _threshold) {
 		for (std::list<int>::iterator it = ++list.begin(); it != list.end(); ) {
 			std::list<int>::iterator fixed = it;
 			std::advance(fixed, -1);
@@ -186,10 +185,8 @@ void PmergeMe::sort(char **argv) {
 		return ;
 
 	gettimeofday(&dm_end, NULL);
-	double dm_diff = (dm_start.tv_sec - dm_end.tv_sec) * 1e6;
-	dm_diff = (dm_diff + (dm_start.tv_usec - dm_start.tv_usec)) * 1e-6;
-	if (dm_diff < 0)
-		dm_diff *= -1;
+	double dm_diff = (dm_end.tv_sec - dm_start.tv_sec) * 1e6;
+	dm_diff = (dm_diff + (dm_end.tv_usec - dm_start.tv_usec)) * 1e-6;
 
 	if (checkSorted()) {
 		gettimeofday(&v_start, NULL);
